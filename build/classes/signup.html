@@ -1,0 +1,141 @@
+<html>
+<head>
+<title>Safe Drinking</title>
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="common.css">
+<style>
+.form {
+	float: left;
+	width: 100%;
+	padding: 30px 16px;
+	box-sizing: border-box;
+}
+.form input[type=text] {
+	float: left;
+	width: 100%;
+	margin-bottom: 10px;
+	padding: 10px;
+	box-sizing: border-box;
+	border: 1px solid #DDD;
+	border-radius: 20px;
+}
+.form input[type=password] {
+	float: left;
+	width: 100%;
+	margin-bottom: 10px;
+	padding: 10px;
+	box-sizing: border-box;
+	border: 1px solid #DDD;
+	border-radius: 20px;
+}
+.form input[type=submit] {
+	float: left;
+	width: 100%;
+	margin: 25px 0px;
+	padding: 10px;
+	box-sizing: border-box;
+	text-align: center;
+	color: black;
+	background-color: #E6E6E6;
+	border: none;
+	border-radius: 20px;
+}
+.form .desc {
+    line-height: 1.5em;
+    font-size: 0.8em;
+    color: #888;
+}
+.form .button {
+	float: left;
+	margin-top: 20px;
+    padding: 6px 20px 4px 20px;
+    background-color: white;
+    color: black;
+    text-align: center;
+    font-size: 0.8em;
+    border: 1px solid black;
+    border-radius: 20px;
+    text-decoration: none;
+    cursor: pointer;
+}
+</style>
+</head>
+<body>
+<div id="header-area" class="section">
+	<div class="back" onclick="history.back()"></div>
+	<h3>Join</h3>
+</div>
+<div id="contents-area" class="section">
+	<div class="form">
+		<input id="id" type="text" placeholder="아이디 (이메일)">
+		<input id="name" type="text" placeholder="이름">
+		<input id="pass" type="password" placeholder="패스워드">
+		<input id="pass2" type="password" placeholder="패스워드 확인">
+		<input type="submit" value="회원가입" onclick="signup()">
+		<div class="desc">
+			회원 가입을 하실 경우 Safe Drinking 약관에 동의하며, 쿠키 사용을 포함한 데이터 정책을 읽고 이해하신 것으로 간주됩니다.
+		</div>
+	</div>
+</div>
+<div id="footer-area" class="section">
+	Copyright: safedrinking.com, 2018
+</div>
+</body>
+</html>
+
+<script src="js/jquery-1.12.0.min.js"></script>
+<script src="js/core.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+
+});
+
+function signup() {
+	if (check() == false) return;
+	
+	var uid = $("#id").val().trim();
+	var uname = $("#name").val().trim();
+	var upass = $("#pass").val().trim();
+	
+	var params = "uid=" + uid + "&uname=" + uname + "&upass=" + upass;
+	
+	AJAX.call("signup.jsp", params, function(data) {
+		var code = data.trim();
+		if (code == "EX") {
+			alert("이미 존재하는 아이디입니다.");
+		}
+		else if (code == "OK") {
+			alert("회원가입이 완료되었습니다.");
+			window.location.href = "main.html";
+		}
+	});
+}
+
+function check() {
+	var uid = $("#id").val().trim();
+	if (uid == "") {
+		alert("아이디를 입력해주세요.");
+		return false;
+	}
+
+	var uname = $("#name").val().trim();
+	if (uname == "") {
+		alert("이름을 입력해주세요.");
+		return false;
+	}
+
+	var upass = $("#pass").val().trim();
+	if (upass == "") {
+		alert("패스워드를 입력해주세요.");
+		return false;
+	}
+
+	var upass2 = $("#pass2").val().trim();
+	if (upass != upass2) {
+		alert("입력된 두개의 패스워드가 일치하지 않습니다.");
+		return false;
+	}
+	return true;
+}
+</script>

@@ -1,0 +1,32 @@
+<html>
+<head>
+<title>MySNS</title>
+<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<style>
+.section {
+	float: "left";
+	width: 100%;
+	margin-top: 10px;
+}
+</style>
+</head>
+<body>
+	<h3>File upload test</h3>
+	<form method="post" action="fileup.jsp" enctype="multipart/form-data">
+		<div class="section">
+			ID: <input type="text" name="id" size=30>
+		</div>
+		<div class="section">
+			Description: <br>
+			<textarea name="desc" rows=5 cols=40></textarea>
+		</div>		
+		<div class="section">
+			Image: <input type="file" name="image">
+		</div>		
+		<div class="section">
+			<input type="submit" value="Upload">
+		</div>		
+	</form>
+</body>
+</html>
