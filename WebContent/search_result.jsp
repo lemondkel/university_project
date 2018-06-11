@@ -1,14 +1,17 @@
-<%@ page import="java.sql.*" %>
 <%@ page import="org.json.simple.JSONObject" %>
 <%@ page import="org.json.simple.parser.JSONParser" %>
+<%@ page import="java.sql.Connection" %>
+<%@ page import="java.sql.DriverManager" %>
+<%@ page import="java.sql.ResultSet" %>
+<%@ page import="java.sql.Statement" %>
 <%@ page import="java.util.Arrays" %>
-<%@ page import="java.util.ArrayList" %>
 <%@ page import="java.util.List" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%
 	request.setCharacterEncoding("UTF-8");
 
 	String searchStr = request.getParameter("searchStr") == null ? "" : request.getParameter("searchStr");
+	String type = request.getParameter("type") != null ? request.getParameter("type") : "0";
 	int paging = request.getParameter("paging") == null ? 1 : Integer.parseInt(request.getParameter("paging"));
 	System.out.println(searchStr);
 
@@ -19,7 +22,7 @@
 	Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/mysns", "root", "1234");
 	Statement st = conn.createStatement();
 
-	String sql = "select count(*) as totalCount from info WHERE type = 0";
+	String sql = "select count(*) as totalCount from info WHERE type = " + type;
 	ResultSet rs = st.executeQuery(sql);
 	int totalCount = 0;
 
@@ -101,10 +104,40 @@
 			margin-left: 600;
 		}
 
-		.search_result {
+		.search_tab {
 			float: left;
 			width: 100%;
 			margin-top: 150px;
+			text-align: center;
+			margin-bottom: 50px;
+		}
+
+		.tab-area {
+			max-width: 500px;
+			margin: 0 auto 0 440px;
+		}
+
+		.tab-area span {
+			width: 49%;
+			display: inline-block;
+			font-size: 24px;
+			border-radius: 10px;
+			padding: 10px 0;
+			cursor: pointer;
+		}
+
+		.tab-area span.active {
+			background: #ddd;
+		}
+
+		.tab-area span:hover {
+			background: #EEE;
+		}
+
+		.search_result {
+			float: left;
+			width: 100%;
+			margin-top: 50px;
 			text-align: center;
 			margin-bottom: 200px;
 		}
@@ -187,21 +220,34 @@
 	<div class="menu" onclick="hideMenu()">닫기</div>
 </div>
 <div id="contents-area" class="section">
-	<form method="POST" action="search_result.jsp">
+	<form name="search" method="POST" action="search_result.jsp">
 		<div class="form">
 			<h1>안전한 드링크 정보</h1>
 			<div class="can" onclick="home()"></div>
 			<input type="text" name="searchStr" placeholder="검색어 입력" value="<%=searchStr%>">
+			<input type="hidden" name="type" value="<%=type%>">
 			<input type="submit" value="검색">
 		</div>
 	</form>
 </div>
 
+<%
+	String isDrink = type.equals("0") ? "class=\"active\"" : "";
+	String isChemical = type.equals("1") ? "class=\"active\"" : "";
+%>
+
+<div class="search_tab">
+	<div class="tab-area">
+		<span <%=isDrink%> onclick="searchTab(1)">음료수정보</span>
+		<span <%=isChemical%> onclick="searchTab(2)">화학물정보</span>
+	</div>
+</div>
+
 <div class="search_result">
 	<%
 
-		String sql2 = "SELECT * FROM info WHERE jsonobj like '%" + searchStr
-				+ "%' or title like '%" + searchStr + "%' AND type = 0 ORDER BY `no` DESC LIMIT " + ((paging - 1) * 2) + ", 2";
+		String sql2 = "SELECT * FROM info WHERE (jsonobj like '%" + searchStr
+				+ "%' or title like '%" + searchStr + "%') AND type = " + type + " ORDER BY `no` DESC LIMIT " + ((paging - 1) * 2) + ", 2";
 		rs = st.executeQuery(sql2);
 		int i = 0;
 		JSONParser jsonParser = new JSONParser();
@@ -353,15 +399,15 @@
 	}
 
 	function taste() {
-		window.location.href = "main.html";
+		window.location.href = "main.jsp";
 	}
 
 	function drink() {
-		window.location.href = "drink_main.html";
+		window.location.href = "drink_main.jsp";
 	}
 
 	function chemical() {
-		window.location.href = "chemical_main.html";
+		window.location.href = "chemical_main.jsp";
 	}
 
 	function infomain() {
@@ -369,10 +415,10 @@
 	}
 
 	function qna() {
-		window.location.href = 'qna.html';
+		window.location.href = 'qna.jsp';
 	}
 
-	function notice () {
+	function notice() {
 		window.location.href = "notice.html";
 	}
 
@@ -390,6 +436,18 @@
 
 	function writeNew() {
 		window.location.href = "write.html";
+	}
+
+	function searchTab(number) {
+		switch (number) {
+			case 1:
+				$('input[name=type]').val(0);
+				break;
+			case 2:
+				$('input[name=type]').val(1);
+				break;
+		}
+		$('form[name=search]').submit();
 	}
 
 

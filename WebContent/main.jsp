@@ -1,3 +1,9 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%
+	request.setCharacterEncoding("UTF-8");
+
+	int paging = request.getParameter("paging") == null ? 1 : Integer.parseInt(request.getParameter("paging"));
+%>
 <html>
 <head>
 	<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
@@ -38,6 +44,14 @@
 			border-bottom: 1px solid #ddd;
 			cursor: pointer;
 		}
+
+		#paging-div {
+			margin-bottom: 100px;
+			float: left;
+			margin-top: 20px;
+			text-align: center;
+			width: 100%;
+		}
 	</style>
 </head>
 <body>
@@ -62,6 +76,9 @@
 		<div class="desc">작성글이 존재하지 않습니다.</div>
 	</div>
 	<div id="--feed-list" class="section"></div>
+	<div id="paging-div">
+		<input type="hidden" id="paging" value="<%=paging%>"/>
+	</div>
 </div>
 <div id="footer-area" class="section">
 	Copyright: safedrinking.com, 2018
@@ -85,7 +102,7 @@
 	});
 
 	function start(id) {
-		var params = "id=" + id;
+		var params = "id=" + id + "&paging=" + $('#paging').val();
 		AJAX.call("fetch.jsp", params, function (data) {
 			var list = JSON.parse(data.trim());
 			console.log(list);
@@ -95,6 +112,53 @@
 				showFeeds(list);
 			}
 		});
+
+		AJAX.call("fetch_paging.jsp", params, function (data) {
+				var totalCount = parseInt(JSON.parse(data.trim()));
+				var countList = 5; // 페이지당 아이템 표시 개수
+				var countPage = 5; // 페이지 넘버 표시할 개수
+				var totalPage = totalCount / countList;
+				var paging = parseInt($('#paging').val());
+				var pagingDiv = $('#paging-div');
+
+				if (totalCount % countList > 0) {
+					totalPage++;
+				}
+
+				if (totalPage < paging) {
+					paging = totalPage;
+				}
+
+				var startPage = ((paging - 1) / 10) * 10 + 1;
+				var endPage = startPage + countPage - 1;
+
+				if (endPage > totalPage) {
+					endPage = totalPage;
+				}
+
+				if (startPage > 1) {
+					pagingDiv.append('<a href="main.jsp?paging=1">처음</a>');
+				}
+				if (paging > 1) {
+					pagingDiv.append('<a href="main.jsp?paging=' + (paging - 1) + '">이전</a>');
+				}
+
+				for (var iCount = startPage; iCount <= endPage; iCount++) {
+					if (iCount == paging) {
+						pagingDiv.append('<b>' + iCount + '</b>');
+					} else {
+						pagingDiv.append(iCount);
+					}
+				}
+
+				if (paging < totalPage) {
+					pagingDiv.append('<a href="main.jsp?paging=' + (paging + 1) + '">다음</a>');
+				}
+				if (endPage < totalPage) {
+					pagingDiv.append('<a href="main.jsp?paging=' + (totalPage) + '">끝</a>');
+				}
+			}
+		);
 	}
 
 	function showMenu() {
@@ -110,15 +174,15 @@
 	}
 
 	function taste() {
-		window.location.href = "main.html";
+		window.location.href = "main.jsp";
 	}
 
 	function drink() {
-		window.location.href = "drink_main.html";
+		window.location.href = "drink_main.jsp";
 	}
 
 	function chemical() {
-		window.location.href = "chemical_main.html";
+		window.location.href = "chemical_main.jsp";
 	}
 
 	function infomain() {
@@ -126,10 +190,10 @@
 	}
 
 	function qna() {
-		window.location.href = 'qna.html';
+		window.location.href = 'qna.jsp';
 	}
 
-	function notice () {
+	function notice() {
 		window.location.href = "notice.html";
 	}
 

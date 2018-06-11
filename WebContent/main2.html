@@ -130,6 +130,7 @@
 			<h1>안전한 드링크 정보</h1>
 			<div class="can" onclick="home()"></div>
 			<input type="text" name="searchStr" placeholder="검색어 입력">
+			<input type="hidden" name="type" value="0">
 			<input type="submit" value="검색">
 		</div>
 	</form>
@@ -186,15 +187,15 @@
 	}
 
 	function taste() {
-		window.location.href = "main.html";
+		window.location.href = "main.jsp";
 	}
 
 	function drink() {
-		window.location.href = "drink_main.html";
+		window.location.href = "drink_main.jsp";
 	}
 
 	function chemical() {
-		window.location.href = "chemical_main.html";
+		window.location.href = "chemical_main.jsp";
 	}
 
 	function infomain() {
@@ -202,7 +203,7 @@
 	}
 
 	function qna() {
-		window.location.href = 'qna.html';
+		window.location.href = 'qna.jsp';
 	}
 
 	function notice() {

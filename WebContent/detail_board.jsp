@@ -167,15 +167,15 @@
 	}
 
 	function taste() {
-		window.location.href = "main.html";
+		window.location.href = "main.jsp";
 	}
 
 	function drink() {
-		window.location.href = "drink_main.html";
+		window.location.href = "drink_main.jsp";
 	}
 
 	function chemical() {
-		window.location.href = "chemical_main.html";
+		window.location.href = "chemical_main.jsp";
 	}
 
 	function infomain() {
@@ -183,7 +183,7 @@
 	}
 
 	function qna() {
-		window.location.href = 'qna.html';
+		window.location.href = 'qna.jsp';
 	}
 
 	function notice () {

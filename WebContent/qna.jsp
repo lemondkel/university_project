@@ -1,3 +1,9 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%
+	request.setCharacterEncoding("UTF-8");
+
+	int paging = request.getParameter("paging") == null ? 1 : Integer.parseInt(request.getParameter("paging"));
+%>
 <html>
 <head>
 	<meta name=viewport content="width=device-width, initial-scale=1, user-scalable=0">
@@ -38,12 +44,43 @@
 			border-bottom: 1px solid #ddd;
 			cursor: pointer;
 		}
+
+		h3.answer {
+			text-align: left;
+			margin-left: 10px;
+			margin-top: 160px;
+			margin-right: 10px;
+		}
+
+		#answer-list {
+			display: inline-block;
+			width: 100%;
+			background: #EEE;
+		}
+
+		#answer-list .author, #answer-list p {
+			display: inline-block;
+		}
+
+		.answer-item {
+			display: inline-block;
+			width: 100%;
+			padding: 20px 0;
+		}
+
+		#paging-div {
+			margin-bottom: 100px;
+			float: left;
+			margin-top: 20px;
+			text-align: center;
+			width: 100%;
+		}
 	</style>
 </head>
 <body>
 <div id="header-area" class="section">
 	<div class="navicon" onclick="showMenu()"></div>
-	<h3>화학물정보</h3>
+	<h3>QnA</h3>
 	<div class="pen" onclick="writeNew()"></div>
 </div>
 <div class="side-mnu">
@@ -62,6 +99,9 @@
 		<div class="desc">작성글이 존재하지 않습니다.</div>
 	</div>
 	<div id="--feed-list" class="section"></div>
+	<div id="paging-div">
+		<input type="hidden" id="paging" value="<%=paging%>"/>
+	</div>
 </div>
 <div id="footer-area" class="section">
 	Copyright: safedrinking.com, 2018
@@ -85,8 +125,8 @@
 	});
 
 	function start(id) {
-		var params = "id=" + id;
-		AJAX.call("chemical_fetch.jsp", params, function (data) {
+		var params = "id=" + id + "&paging=" + $('#paging').val();
+		AJAX.call("qna_fetch.jsp", params, function (data) {
 			var list = JSON.parse(data.trim());
 			console.log(list);
 
@@ -95,6 +135,53 @@
 				showFeeds(list);
 			}
 		});
+
+		AJAX.call("qna_fetch_paging.jsp", params, function (data) {
+				var totalCount = parseInt(JSON.parse(data.trim()));
+				var countList = 5; // 페이지당 아이템 표시 개수
+				var countPage = 5; // 페이지 넘버 표시할 개수
+				var totalPage = totalCount / countList;
+				var paging = parseInt($('#paging').val());
+				var pagingDiv = $('#paging-div');
+
+				if (totalCount % countList > 0) {
+					totalPage++;
+				}
+
+				if (totalPage < paging) {
+					paging = totalPage;
+				}
+
+				var startPage = ((paging - 1) / 10) * 10 + 1;
+				var endPage = startPage + countPage - 1;
+
+				if (endPage > totalPage) {
+					endPage = totalPage;
+				}
+
+				if (startPage > 1) {
+					pagingDiv.append('<a href="qna.jsp?paging=1">처음</a>');
+				}
+				if (paging > 1) {
+					pagingDiv.append('<a href="qna.jsp?paging=' + (paging - 1) + '">이전</a>');
+				}
+
+				for (var iCount = startPage; iCount <= endPage; iCount++) {
+					if (iCount == paging) {
+						pagingDiv.append('<b>' + iCount + '</b>');
+					} else {
+						pagingDiv.append(iCount);
+					}
+				}
+
+				if (paging < totalPage) {
+					pagingDiv.append('<a href="qna.jsp?paging=' + (paging + 1) + '">다음</a>');
+				}
+				if (endPage < totalPage) {
+					pagingDiv.append('<a href="qna.jsp?paging=' + (totalPage) + '">끝</a>');
+				}
+			}
+		);
 	}
 
 	function showMenu() {
@@ -110,27 +197,27 @@
 	}
 
 	function taste() {
-		window.location.href = "main.html";
+		window.location.href = "main.jsp";
 	}
 
 	function drink() {
-		window.location.href = "drink_main.html";
+		window.location.href = "drink_main.jsp";
 	}
 
 	function chemical() {
-		window.location.href = "chemical_main.html";
+		window.location.href = "chemical_main.jsp";
 	}
 
 	function infomain() {
 		window.location.href = "infomain.html";
 	}
 
-	function notice () {
-		window.location.href = "notice.html";
+	function qna() {
+		window.location.href = 'qna.jsp';
 	}
 
-	function qna() {
-		window.location.href = 'qna.html';
+	function notice() {
+		window.location.href = "notice.html";
 	}
 
 	function logout() {
@@ -142,7 +229,7 @@
 	}
 
 	function writeNew() {
-		window.location.href = "chemical_write.html";
+		window.location.href = "qna_write.html";
 	}
 
 	function showFeeds(list) {
@@ -161,6 +248,8 @@
 				var listId = $("#--feed-list").children('.feed')[i].children[0].children[1].innerText;
 				if (id === listId) {
 					$("#--feed-list").children('.feed')[i].children[0].innerHTML += "<div class='board_button'>" + "<button type='button' onclick='editBoard(this)'>수정하기</button> <button type='button' onclick='deleteBoard(this)'>삭제하기</button>" + "</div>";
+				} else {
+					$("#--feed-list").children('.feed')[i].children[0].innerHTML += "<div class='board_button'>" + "<button type='button' onclick='answerForQuestion(this)'>답변하기</button>" + "</div>";
 				}
 			}
 		});
@@ -169,7 +258,14 @@
 	function editBoard(target) {
 		if (confirm("해당 게시물을 수정하시겠습니까?") == true) {
 			var id = $(target).parents('.feed').attr('data-id');
-			window.location.href = 'info_edit.jsp?no=' + id;
+			window.location.href = 'qna_edit.jsp?no=' + id;
+		}
+	}
+
+	function answerForQuestion(target) {
+		if (confirm("해당 게시물에 답변하시겠습니까?") == true) {
+			var id = $(target).parents('.feed').attr('data-id');
+			window.location.href = 'qna_answer.jsp?no=' + id;
 		}
 	}
 
@@ -177,7 +273,7 @@
 		if (confirm("해당 게시물을 삭제하시겠습니까?") == true) {
 			var id = $(target).parents('.feed').attr('data-id');
 			$.ajax({
-				url: 'delete_board.jsp',
+				url: 'delete_qna.jsp',
 				method: 'GET',
 				data: {
 					id: id
@@ -199,6 +295,32 @@
 		str += "</div>";
 
 		str += "<p>" + feed.desc + "</p>";
+
+		var answer = feed.answers;
+		str += '<div>';
+
+		if (answer.length === 0) {
+			str += '<h3 class="answer" style="text-align: left;">답변글이 존재하지 않습니다.</h3>';
+		} else {
+			str += '<h3 class="answer" style="text-align: left;">답변</h3>';
+		}
+		str += '<div id="answer-list">';
+		console.log(answer);
+		for (var i = 0; i < answer.length; i++) {
+			str += "<div class='answer-item'>";
+			str += "<div class='author'>";
+			str += "<div class='photo'></div>";
+			str += "<div class='name'>" + answer[i].id + "</div>";
+			str += "</div>";
+
+			str += "<p>" + answer[i].desc + "</p>";
+			str += "</div>";
+		}
+
+		str += "</div>";
+		str += '</div>';
+		str += '</div>';
+
 
 		var images = feed.images;
 		if (images.length == 1) {

@@ -274,7 +274,7 @@
 	}
 
 	function qna() {
-		window.location.href = 'qna.html';
+		window.location.href = 'qna.jsp';
 	}
 
 	function notice () {
